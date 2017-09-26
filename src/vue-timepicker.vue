@@ -4,7 +4,7 @@ const CONFIG = {
   MINUTE_TOKENS: ['mm', 'm'],
   SECOND_TOKENS: ['ss', 's'],
   APM_TOKENS: ['A', 'a']
-}
+};
 
 export default {
   name: 'VueTimepicker',
@@ -38,6 +38,11 @@ export default {
     disabledValues: {
       type: Object,
       default: () => { return { hour: [], minute: [], second: [], apm: [] } }
+    },
+
+    fieldName: {
+      type: String,
+      default: ''
     }
   },
 
@@ -50,101 +55,119 @@ export default {
   },
 
   computed: {
+    displayTimeWithNull () {
+        let formatString = this.format;
+
+        if (this.value[this.hourType]) {
+            formatString = formatString.replace(new RegExp(this.hourType, 'g'), this.value[this.hourType]);
+        }
+        if (this.value[this.minuteType]) {
+            formatString = formatString.replace(new RegExp(this.minuteType, 'g'), this.value[this.minuteType]);
+        }
+        if (this.value[this.secondType] && this.secondType) {
+            formatString = formatString.replace(new RegExp(this.secondType, 'g'), this.second);
+        }
+        if (this.apm && this.apmType) {
+            formatString = formatString.replace(new RegExp(this.apmType, 'g'), this.apm);
+        }
+
+        return formatString === this.format ? '' : formatString;
+    },
     displayTime () {
-      let formatString = this.format
+      let formatString = this.format;
 
       if (this.value[this.hourType]) {
-        formatString = formatString.replace(new RegExp(this.hourType, 'g'), this.originalHour)
+        formatString = formatString.replace(new RegExp(this.hourType, 'g'), this.value[this.hourType]);
       }
       if (this.value[this.minuteType]) {
-        formatString = formatString.replace(new RegExp(this.minuteType, 'g'), this.value[this.minuteType])
+        formatString = formatString.replace(new RegExp(this.minuteType, 'g'), this.value[this.minuteType]);
       }
       if (this.value[this.secondType] && this.secondType) {
-        formatString = formatString.replace(new RegExp(this.secondType, 'g'), this.second)
+        formatString = formatString.replace(new RegExp(this.secondType, 'g'), this.second);
       }
       if (this.apm && this.apmType) {
-        formatString = formatString.replace(new RegExp(this.apmType, 'g'), this.apm)
+        formatString = formatString.replace(new RegExp(this.apmType, 'g'), this.apm);
       }
 
-      return formatString
+      return formatString;
     },
 
     showClearBtn () {
-      return !!this.value[this.hourType] || !!this.value[this.minuteType]
+      return !!this.value[this.hourType] || !!this.value[this.minuteType];
     },
 
     hourType () {
-      return this.checkAcceptingType(CONFIG.HOUR_TOKENS, this.format, 'HH')
+      return this.checkAcceptingType(CONFIG.HOUR_TOKENS, this.format, 'HH');
     },
 
     minuteType () {
-      return this.checkAcceptingType(CONFIG.MINUTE_TOKENS, this.format, 'mm')
+      return this.checkAcceptingType(CONFIG.MINUTE_TOKENS, this.format, 'mm');
     },
 
     secondType () {
-      return this.checkAcceptingType(CONFIG.SECOND_TOKENS, this.format)
+      return this.checkAcceptingType(CONFIG.SECOND_TOKENS, this.format);
     },
 
     apmType () {
-      return this.checkAcceptingType(CONFIG.APM_TOKENS, this.format)
+      return this.checkAcceptingType(CONFIG.APM_TOKENS, this.format);
     },
 
     hours () {
-      const hoursCount = (this.hourType === 'h' || this.hourType === 'hh') ? 12 : 24
-      let hours = []
+      const hoursCount = (this.hourType === 'h' || this.hourType === 'hh') ? 12 : 24;
+      let hours = [];
 
       for (let i = 0; i < hoursCount; i++) {
-        hours.push(this.formatValue(this.hourType, i))
+        hours.push(this.formatValue(this.hourType, i));
       }
 
-      return hours
+      return hours;
     },
 
     minutes () {
-      let minutes = []
+      let minutes = [];
 
       for (let i = 0; i < 60; i += this.minuteInterval) {
-        minutes.push(this.formatValue(this.minuteType, i))
+        minutes.push(this.formatValue(this.minuteType, i));
       }
 
-      return minutes
+      return minutes;
     },
 
     seconds () {
-      let seconds = []
+      let seconds = [];
 
       for (let i = 0; i < 60; i += this.secondInterval) {
-        seconds.push(this.formatValue(this.secondType, i))
+        seconds.push(this.formatValue(this.secondType, i));
       }
 
-      return seconds
+      return seconds;
     },
 
     apms () {
       switch (this.apmType) {
         case 'A':
-          return ['AM', 'PM']
+          return ['AM', 'PM'];
         case 'a':
-          return ['am', 'pm']
+          return ['am', 'pm'];
         default:
-          return []
+          return [];
       }
     },
 
     isTwelveHours () {
-      return this.hourType === 'h' || this.hourType === 'hh'
+      return this.hourType === 'h' || this.hourType === 'hh';
     },
 
     isPastNoon () {
-      return this.apm === 'pm' || this.apm === 'PM'
+      return this.apm === 'pm' || this.apm === 'PM';
     },
 
     originalHour () {
-      let hour = this.value[this.hourType] % 12
+      let hour = this.value[this.hourType] % 12;
 
       return hour === 0
         ? '12'
-        : (hour < 10 ? '0' : '') + hour
+        : (hour < 10 ? '0' : '') + hour;
     }
   },
 
@@ -154,111 +177,113 @@ export default {
         case 'H':
         case 'm':
         case 's':
-          return String(i)
+          return String(i);
         case 'HH':
         case 'mm':
         case 'ss':
-          return i < 10 ? `0${i}` : String(i)
+          return i < 10 ? `0${i}` : String(i);
         case 'h':
         case 'k':
-          return String(i + 1)
+          return String(i + 1);
         case 'hh':
         case 'kk':
-          return (i + 1) < 10 ? `0${i + 1}` : String(i + 1)
+          return (i + 1) < 10 ? `0${i + 1}` : String(i + 1);
         default:
-          return ''
+          return '';
       }
     },
 
     checkAcceptingType (validValues, formatString, fallbackValue) {
-      if (!validValues || !formatString || !formatString.length) { return '' }
+      if (!validValues || !formatString || !formatString.length) { return ''; }
 
-      const length = validValues.length
+      const length = validValues.length;
 
       for (let i = 0; i < length; i++) {
         if (formatString.indexOf(validValues[i]) > -1) {
-          return validValues[i]
+          return validValues[i];
         }
       }
 
-      return fallbackValue || ''
+      return fallbackValue || '';
     },
 
     toggleDropdown () {
-      this.showDropdown = !this.showDropdown && !this.disabled
+      this.showDropdown = !this.showDropdown && !this.disabled;
     },
 
     computeHour (value) {
-      value = parseInt(value)
+      value = parseInt(value);
 
-      value = (this.isTwelveHours && this.isPastNoon)
-        ? value > 12 // PM
-          ? value !== 24 // 12:00PM will become 24. Set it to noon instead.
-            ? value
-            : 12
-          : value + 12
-        : value <= 12
-          ? value !== 12 // There's no 12:00AM. Set it to 00:00 instead.
-            ? value
-            : 0
-          : value - 12
+//      value = (this.isTwelveHours && this.isPastNoon)
+//        ? value > 12 // PM
+//          ? value !== 24 // 12:00PM will become 24. Set it to noon instead.
+//            ? value
+//            : 12
+//          : value + 12
+//        : value <= 12
+//          ? value !== 12 // There's no 12:00AM. Set it to 00:00 instead.
+//            ? value
+//            : 0
+//          : value - 12;
 
-      return (value < 10 ? '0' : '') + value
+      return (value < 10 ? '0' : '') + value;
     },
 
     onHourSelect (value) {
-      const newValue = this.value
-      newValue[this.hourType] = this.computeHour(value)
+      const newValue = this.value;
+      newValue[this.hourType] = this.computeHour(value);
 
       this.$emit('input', newValue)
     },
 
     onMinuteSelect (value) {
-      const newValue = this.value
-      newValue[this.minuteType] = value
+      const newValue = this.value;
+      newValue[this.minuteType] = value;
 
-      this.$emit('input', newValue)
+      this.$emit('input', newValue);
     },
 
     onSecondSelect (value) {
-      const newValue = this.value
-      newValue[this.secondType] = value
+      const newValue = this.value;
+      newValue[this.secondType] = value;
 
-      this.$emit('input', newValue)
+      this.$emit('input', newValue);
     },
 
     onApmSelect (value) {
-      this.apm = value
+      this.apm = value;
 
       if (parseFloat(this.value[this.hourType]) && isFinite(this.value[this.hourType])) {
-        const newValue = this.value
-        newValue[this.hourType] = this.computeHour(this.value[this.hourType])
+        const newValue = this.value;
+        newValue[this.hourType] = this.computeHour(this.value[this.hourType]);
 
-        this.$emit('input', newValue)
+        this.$emit('input', newValue);
       }
     },
 
     clearTime () {
-      let time = {}
+      const time = this.value;
 
-      time[this.hourType] = ''
-      time[this.minuteType] = ''
-      time[this.secondType] = ''
+      time[this.hourType] = null;
+      time[this.minuteType] = null;
+      time[this.secondType] = null;
 
-      this.apm = this.apms[0]
-      this.$emit('input', time)
+      this.apm = this.apms[0];
+
+      this.$emit('input', time);
     }
   },
 
   mounted () {
-    this.apm = this.apms[0]
+    this.apm = this.apms[0];
   }
 }
 </script>
 
 <template>
-<span class="time-picker">
-  <input class="display-time" :readonly="!disabled" :disabled="disabled" :value="displayTime" @click.stop="toggleDropdown" type="text" />
+<div class="time-picker">
+  <input class="time-picker-control" :name="fieldName" :value="displayTimeWithNull" type="hidden" />
+  <input class="time-picker-control" :readonly="!disabled" :disabled="disabled" :value="displayTime" @click.stop="toggleDropdown" />
   <span class="clear-btn" v-if="!hideClearButton" v-show="!showDropdown && showClearBtn" @click.stop="clearTime">&times;</span>
   <div class="time-picker-overlay" v-if="showDropdown" @click.stop="toggleDropdown"></div>
   <div class="dropdown" v-show="showDropdown">
@@ -301,7 +326,7 @@ export default {
       </ul>
     </div>
   </div>
-</span>
+</div>
 </template>
 
 <style>
